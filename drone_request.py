@@ -1,16 +1,16 @@
-#!/usr/bin/python
-
 import requests
+import json
 
 
 class Request:
-    def __init__(self, host, **kwargs):
+    def __init__(self, host):
         self.host = host
+        credentials = json.load(open('credentials.json'))
         req = requests.post(
             url='http://{}:3000/login'.format(self.host),
             params={
-                'email': kwargs['email'],
-                'password': kwargs['password']
+                'email': credentials['email'],
+                'password': credentials['password']
             }
         )
         self.token = req.json()['token']
