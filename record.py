@@ -6,25 +6,24 @@ import math
 import json
 
 
-r = Request(email='samples@net.com', password='password')
+r = Request()
 
+# opens the files containing the latitude and longitude coords from the last flight
 latitude_file = open('latitude.data', 'r')
 longitude_file = open('longitude.data', 'r')
 
 latitude_data = latitude_file.read()[:-1]
 longitude_data = longitude_file.read()[:-1]
 
+# turns the file data in a list
 lat = latitude_data.split(',')
 long = longitude_data.split(',')
 
+# takes the first and last coordinates and calculates the distance between them
 distance = 111 * math.sqrt((float(long[0]) - float(long[-1])) ** 2 + (float(lat[0]) - float(lat[-1])) ** 2)
 
-r.save_flight(distance=distance, name='My Flight', longitude=longitude_data, latitude=latitude_data, rating=2)
-
-latitude_file = open('latitude.data', 'r')
-longitude_file = open('longitude.data', 'r')
-
-latitude_file.read()
+# saves the flight
+r.save_flight(distance=distance, name='My Flight', longitude=longitude_data, latitude=latitude_data)
 
 ubl = navio.ublox.UBlox("spi:0.0", baudrate=5000000, timeout=2)
 
@@ -61,14 +60,17 @@ ubl.configure_message_rate(navio.ublox.CLASS_NAV, navio.ublox.MSG_NAV_CLOCK, 5)
 
 
 if __name__ == "__main__":
+    # opens file to write to them
     new_latitude_file = open('latitude.data', 'w+')
     new_longitude_file = open('longitude.data', 'w+')
 
     while True:
         msg = ubl.receive_message()
         if msg.name() == "NAV_POSLLH":
+            # retrieves data from the gnss antenna and returns coordinates
             outstr = str(msg).split(",")[1:]
             new_latitude = float(outstr[0].split("=")[1]) / 10000000
             new_longitude = float(outstr[1].split("=")[1]) / 10000000
+            # writes to the files those coordinates
             new_latitude_file.write(str(new_latitude) + ',')
             new_longitude_file.write(str(new_longitude) + ',')
